@@ -5,7 +5,9 @@ go 1.22.1
 require github.com/kataras/iris v0.0.2
 
 require (
-	xorm.io/builder v0.3.6 // indirect
+	github.com/goccy/go-json v0.8.1 // indirect
+	github.com/syndtr/goleveldb v1.0.0 // indirect
+	xorm.io/builder v0.3.11-0.20220531020008-1bd24a7dc978 // indirect
 	xorm.io/core v0.7.2-0.20190928055935-90aeac8d08eb // indirect
 )
 
@@ -77,4 +79,5 @@ require (
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	xorm.io/xorm v1.3.8
 )
