@@ -1,0 +1,39 @@
+<div class="panel-heading">
+    Total {{.Total}} records
+    {{if ne .PagePrev ""}}<a href="/admin/blackip?page={{.PagePrev}}">Last Page</a>{{end}}
+    {{if ne .PageNext ""}}<a href="/admin/blackip?page={{.PageNext}}">Next Page</a>{{end}}
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>IP</th>
+            <th>Blacklist expiration time</th>
+            <th>Creation time</th>
+            <th>update time</th>
+            <th>Management</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range $i, $data := .Datalist}}
+
+        <tr {{if gt $data.Blacktime $.Now}}class="warning" {{end}}>
+            <th scope="row">{{.Id}}</th>
+            <td>{{$data.Ip}}</td>
+            <td>{{FromUnixtime $data.Blacktime}}</td>
+            <td>{{FromUnixtime $data.SysCreated}}</td>
+            <td>{{FromUnixtime $data.SysUpdated}}</td>
+            <td>
+                <a href="/admin/blackip/black?id={{.Id}}&time=7">One week ban</a>
+                &nbsp;
+                <a href="/admin/blackip/black?id={{.Id}}&time=30">One month ban</a>
+                <br />
+                <a href="/admin/blackip/black?id={{.Id}}&time=365">One year ban</a>
+                &nbsp;
+                <a href="/admin/blackip/black?id={{.Id}}&time=0">Off the ban</a>
+            </td>
+        </tr>
+
+        {{end}}
+    </tbody>
+</table>

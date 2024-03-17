@@ -1,0 +1,104 @@
+<div class="panel-heading">
+    <a href="/admin/gift/edit" style="height:18px; padding:6px;">Add Prize</a>
+    (Total {{.Total}} records)
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Location</th>
+            <th>ID</th>
+            <th title="[Number of Prize Pools]">Name</th>
+            <th title="Total / Remaining">Quantity</th>
+            <th>Probability</th>
+            <th title="In days">Period</th>
+            <th>Picture</th>
+            <th>type</th>
+            <th>Data</th>
+            <th>Start time</th>
+            <th>End Time</th>
+            <th>Update Time</th>
+            <th>Administration</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range $i, $data := .Datalist}}
+
+        <tr {{if eq $data.SysStatus 0}}class="success" {{end}}>
+            <td>{{$data.Displayorder}}</td>
+            <th scope="row">{{.Id}}</th>
+            <td><a href="/admin/result?gift_id={{$data.Id}}">{{$data.Title}}</a></td>
+            <td>{{$data.PrizeNum}} / {{.LeftNum}}</td>
+            <td>{{$data.PrizeCode}}</td>
+            <td title="{{FromUnixtime .PrizeBegin}} - {{FromUnixtime .PrizeEnd}}">
+                <a href="#" data-toggle="modal" data-target="#myModal"
+                    onclick="showSharedGiftInfo('{{FromUnixtime .PrizeBegin}}', '{{FromUnixtime .PrizeEnd}}', '{{.PrizeData}}');return false;">
+                    {{$data.PrizeTime}} days plan</a>
+            </td>
+            <td><img src="{{$data.Img}}" width="50" /></td>
+            <td>{{$data.Gtype}}</td>
+            <td>{{$data.Gdata}}</td>
+            <td>{{FromUnixtime $data.TimeBegin}}</td>
+            <td>{{FromUnixtime $data.TimeEnd}}</td>
+            <td>{{FromUnixtime $data.SysUpdated}}</td>
+            <td>
+                <a href="/admin/gift/edit?id={{.Id}}">Modify</a>
+                {{if eq $data.SysStatus 0}}
+                <a href="/admin/gift/delete?id={{.Id}}">Delete</a>
+                {{else}}
+                <a href="/admin/gift/reset?id={{.Id}}">Recover</a>
+                {{end}}
+                {{if eq .Gtype 2}}
+                <br />
+                <a href="/admin/code?gift_id={{.Id}}">Coupon Management</a>
+                {{end}}
+
+            </td>
+        </tr>
+
+        {{end}}
+    </tbody>
+</table>
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">
+                    Award cycles and schemes
+                </h4>
+            </div>
+            <div class="modal-body">
+                Start time:
+                <span id="modal_time_begin">0</span>
+                <br />
+                End time:
+                <span id="modal_time_end">0</span>
+                <br />
+                <div id="modal_list" style="height:300px; overflow: auto;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                {{/*<button type="button" class="btn btn-primary">Submit changes</button>*/}}
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+
+<script>
+    function showSharedGiftInfo(pb, pe, data) {
+        $('#modal_time_begin').html(pb);
+        $('#modal_time_end').html(pe);
+        var html = '';
+        var i = 0;
+        var datalist = JSON.parse(data);
+        for (var t in datalist) {
+            i += 1;
+            var n = datalist[t];
+            html = html + "&nbsp;&nbsp;" + i + "&nbsp;&nbsp;" + n + "<br/>\n";
+        }
+        $('#modal_list').html(html);
+    }
+</script>

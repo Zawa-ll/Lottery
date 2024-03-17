@@ -1,0 +1,88 @@
+<div class="container-fluid">
+    <div class="panel panel-default" style="margin-bottom: 0px;">
+        <div class="panel-heading" style="margin-bottom:12px;">
+            <a href="/admin/gift">Return</a>
+            {{if gt .info.Id 0}}Edit{{else}}Add{{end}}Prize Information
+        </div>
+        <form class="form-horizontal" action="/admin/gift/save" method="post">
+            <div class="form-group" style="height:30px;">
+                <label for="input_title" class="col-sm-2 control-label">Prize Name</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="input_title" name="title" value="{{.info.Title}}">
+                </div>
+            </div>
+            <div class="form-group" style="height:30px;">
+                <label for="input_prize_num" class="col-sm-2 control-label">Number of prizes</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="input_prize_num" name="prize_num"
+                        value="{{.info.PrizeNum}}">
+                </div>
+            </div>
+            <div class="form-group" style="height:30px;">
+                <label for="input_prize_code" class="col-sm-2 control-label"
+                    title="0-9999, left-right full inclusion relationship, the minimum probability is one in 10,000, e.g.: 0-0. the maximum is one hundred percent, e.g.: 0-9999">Probability
+                    of winning the lottery (?). </label>
+                <div class="col-sm-9">
+                    <input placeholder="numeric interval, e.g. 0-9999" type="text" class="form-control"
+                        id="input_prize_code" name="prize_code" value="{{.info.PrizeCode}}">
+                </div>
+            </div>
+            <div class="form-group" style="height:30px;">
+                <label for="input_prize_time" class="col-sm-2 control-label">Winning cycle (D days)</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="input_prize_time" name="prize_time"
+                        value="{{.info.PrizeTime}}">
+                </div>
+            </div>
+            <div class="form-group" style="height:30px;">
+                <label for="input_img" class="col-sm-2 control-label">Prize Pictures</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="input_img" name="img" value="{{.info.Img}}">
+                </div>
+            </div>
+            <div class="form-group" style="height:30px;">
+                <label for="input_displayorder" class="col-sm-2 control-label">positional sorting</label>
+                <div class="col-sm-9">
+                    <input placeholder="Numbers 0-9" type="text" class="form-control" id="input_displayorder"
+                        name="displayorder" value="{{.info.Displayorder}}">
+                </div>
+            </div>
+            <div class="form-group" style="height:30px;">
+                <label for="input_gtype" class="col-sm-2 control-label"
+                    title="0 Virtual, 1 Same Voucher, 2 Different Voucher, 3 Physical Minor Prize, 4 Physical Major Prize">Type(?)
+                </label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="input_gtype" name="gtype" value="{{.info.Gtype}}">
+                </div>
+            </div>
+            <div class="form-group" style="height:30px;">
+                <label for="input_gdata" class="col-sm-2 control-label">Extended Data</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="input_gdata" name="gdata" value="{{.info.Gdata}}">
+                </div>
+            </div>
+            <div class="form-group" style="height:30px;">
+                <label for="input_time_begin" class="col-sm-2 control-label">Start time</label>
+                <div class="col-sm-9">
+                    <input placeholder="format:YYYY-MM-DD hh:mm:ss" type="text" class="form-control"
+                        id="input_time_begin" name="time_begin" value="{{.info.TimeBegin}}">
+                </div>
+            </div>
+            <div class="form-group" style="height:30px;">
+                <label for="input_time_end" class="col-sm-2 control-label">End time</label>
+                <div class="col-sm-9">
+                    <input placeholder="format:YYYY-MM-DD hh:mm:ss" type="text" class="form-control" id="input_time_end"
+                        name="time_end" value="{{.info.TimeEnd}}">
+                </div>
+            </div>
+
+            <div class="form-group" style="height:30px;">
+                <div class="col-sm-offset-2 col-sm-9">
+                    <button type="submit" class="btn btn-default">Save</button>
+                    <input type="reset" class="btn btn-default" value="reset" />
+                    <input type="hidden" class="form-control" id="input_id" name="id" value="{{.info.Id}}">
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
