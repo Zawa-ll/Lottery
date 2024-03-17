@@ -14,18 +14,18 @@ type Configurator func(bootstrapper *Bootstrapper)
 
 type Bootstrapper struct {
 	*iris.Application
-	AppName     string
-	AppOwner    string
-	AppSpawDate time.Time
+	AppName      string
+	AppOwner     string
+	AppSpawnDate time.Time
 }
 
 // Creating bootstrapper application
 func New(appName, appOwner string, cfgs ...Configurator) *Bootstrapper {
 	b := &Bootstrapper{
-		Application: iris.New(),
-		AppName:     appName,
-		AppOwner:    appOwner,
-		AppSpawDate: time.Now(),
+		Application:  iris.New(),
+		AppName:      appName,
+		AppOwner:     appOwner,
+		AppSpawnDate: time.Now(),
 	}
 
 	for _, cfg := range cfgs {

@@ -1,6 +1,9 @@
 package controllers
 
 import (
+	"fmt"
+
+	"github.com/Zawa-ll/raffle/comm"
 	"github.com/Zawa-ll/raffle/models"
 	"github.com/Zawa-ll/raffle/services"
 	"github.com/kataras/iris"
@@ -49,4 +52,24 @@ func (c *IndexController) GetNewprize() map[string]interface{} {
 	//TODO:
 
 	return rs
+}
+
+func (c *IndexController) GetLogin() {
+	uid := comm.Random(100000)
+	loginuser := models.ObjLoginuser{
+		Uid:      uid,
+		Username: fmt.Sprint("admin-%d", uid),
+		Now:      comm.NowUnix(),
+		Ip:       comm.ClientIP(c.Ctx.Request()),
+	}
+
+	comm.SetLoginuser(c.Ctx.ResponseWriter(), &loginuser)
+	comm.Redirect(c.Ctx.ResponseWriter(),
+		"/public/index.html?from=login")
+}
+
+func (c *IndexController) GetLogout() {
+	comm.SetLoginuser(c.Ctx.ResponseWriter(), nil)
+	comm.Redirect(c.Ctx.ResponseWriter(),
+		"/public/index.html?from=logout")
 }

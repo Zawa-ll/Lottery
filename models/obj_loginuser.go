@@ -4,7 +4,7 @@ package models
 type ObjLoginuser struct {
 	Uid      int
 	Username string
-	Now      int
+	Now      int // -- timestamp
 	Ip       string
-	Sign     string
+	Sign     string // -- signature
 }
