@@ -4,6 +4,7 @@ import (
 	"github.com/Zawa-ll/raffle/bootstrap"
 	"github.com/Zawa-ll/raffle/services"
 	"github.com/Zawa-ll/raffle/web/controllers"
+	"github.com/Zawa-ll/raffle/web/middleware"
 	"github.com/kataras/iris/mvc"
 )
 
@@ -26,4 +27,15 @@ func Configure(b *bootstrap.Bootstrapper) {
 		userdayService,
 		blackipService)
 	index.Handle(new(controllers.IndexController))
+
+	admin := mvc.New(b.Party("/admin"))
+	admin.Router.Use(middleware.BasicAuth)
+	admin.Register(
+		userService,
+		giftService,
+		codeService,
+		resultService,
+		userdayService,
+		blackipService)
+	admin.Handle(new(controllers.AdminController))
 }
