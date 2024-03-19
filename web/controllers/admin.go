@@ -20,9 +20,9 @@ func (c *AdminController) Get() mvc.Result {
 	return mvc.View{
 		Name: "admin/index.html", // Default Admin Page
 		Data: iris.Map{
-			"Title":"Management Backstage",
+			"Title":   "Management Backstage",
 			"Channel": "",
 		},
-		Layout: "admin/layout.html"
+		Layout: "admin/layout.html",
 	}
 }
