@@ -17,8 +17,9 @@ func NewGiftDao(engine *xorm.Engine) *GiftDao {
 }
 
 func (d *GiftDao) Get(id int) *models.LtGift {
+	// Instance of models.LtGift with the provided id in pointer
 	data := &models.LtGift{Id: id}
-	ok, err := d.engine.Get(data)
+	ok, err := d.engine.Get(data) // Noted: pass pointer to .Get() for in-place modification
 	if ok && err == nil {
 		return data
 	} else {
@@ -28,11 +29,12 @@ func (d *GiftDao) Get(id int) *models.LtGift {
 }
 
 func (d *GiftDao) GetAll() []models.LtGift {
-	datalist := make([]models.LtGift, 0)
+	datalist := make([]models.LtGift, 0) // initialize as a slice of models.LtGift with a length of 0
+	// make()'s return type is the specified type (first argument)
 	err := d.engine.
 		Asc("sys_status").
 		Asc("displayorder").
-		Find(&datalist)
+		Find(&datalist) // Fills datalist with the results, in-place modification
 	if err != nil {
 		return datalist
 	} else {
@@ -64,13 +66,13 @@ func (d *GiftDao) CountAll() int64 {
 //}
 
 func (d *GiftDao) Delete(id int) error {
-	data := &models.LtGift{Id: id, SysStatus: 1}
+	data := &models.LtGift{Id: id, SysStatus: 1} // SysStatus to 1 as deleted: Soft Deletion
 	_, err := d.engine.ID(data.Id).Update(data)
 	return err
 }
 
 func (d *GiftDao) Update(data *models.LtGift, columns []string) error {
-	_, err := d.engine.ID(data.Id).MustCols(columns...).Update(data)
+	_, err := d.engine.ID(data.Id).MustCols(columns...).Update(data) // MustCols: columns to be forcefully included in update
 	return err
 }
 
@@ -81,7 +83,6 @@ func (d *GiftDao) Create(data *models.LtGift) error {
 
 // Get a list of currently available prizes.
 // Prize-qualified, status-normal, time-duration
-// gtype in reverse order, displayorder in forward order.
 func (d *GiftDao) GetAllUse() []models.LtGift {
 	now := comm.NowUnix()
 	datalist := make([]models.LtGift, 0)
@@ -94,7 +95,7 @@ func (d *GiftDao) GetAllUse() []models.LtGift {
 		Where("sys_status=?", 0).    // Valid prizes
 		Where("time_begin<=?", now). // Time period
 		Where("time_end>=?", now).   // Within the time period
-		Find(&datalist)
+		Find(&datalist)              // Store Result into datalist
 	if err != nil {
 		return datalist
 	} else {
