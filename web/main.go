@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Zawa-ll/raffle/bootstrap"
+	"github.com/Zawa-ll/raffle/conf"
 	"github.com/Zawa-ll/raffle/web/middleware/identity"
 	"github.com/Zawa-ll/raffle/web/routes"
 )
@@ -19,9 +20,9 @@ func newApp() *bootstrap.Bootstrapper {
 }
 
 func main() {
-	// if port == 8080 {
-	// 	conf.RunningCrontabSerice = true
-	// }
+	if port == 8080 {
+		conf.RunningCrontabService = true
+	}
 
 	app := newApp()
 	app.Listen(fmt.Sprintf(":%d", port))

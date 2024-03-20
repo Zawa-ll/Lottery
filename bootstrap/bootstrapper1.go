@@ -11,7 +11,6 @@ import (
 	"github.com/kataras/iris/v12/middleware/logger"
 	"github.com/kataras/iris/v12/middleware/recover"
 	"github.com/kataras/iris/v12/sessions"
-	// "github.com/kataras/iris/middleware/logger"
 )
 
 type Configurator func(bootstrapper *Bootstrapper)
@@ -41,13 +40,13 @@ func New(appName, appOwner string, cfgs ...Configurator) *Bootstrapper {
 	return b
 }
 
-// Loads the Template
+// set up for rendering views in Iris web application
 func (b *Bootstrapper) SetupViews(viewDir string) { // viewDir specifies where the template can be found
 	htmlEngine := iris.HTML(viewDir, ".html").Layout("shared/layout.html") // setting base layout for all templates
 	// Reload Template Again at Each Time
 	htmlEngine.Reload(true)
 
-	// Add two function for generating formatted string of time from provided integer
+	// Time Formatting Functions
 	htmlEngine.AddFunc("FormUnixtimeShort", func(t int) string {
 		dt := time.Unix(int64(t), int64(0))
 		return dt.Format(conf.SysTimeformShort)
@@ -61,7 +60,8 @@ func (b *Bootstrapper) SetupViews(viewDir string) { // viewDir specifies where t
 	b.RegisterView(htmlEngine)
 }
 
-// SetupSessions initializes the sessions, optionally.
+// SetupSessions initializes the sessions
+// For storing information across multiple HTTP requests made by the same client
 func (b *Bootstrapper) SetupSessions(expires time.Duration, cookieHashKey, cookieBlockKey []byte) {
 	b.Sessions = sessions.New(sessions.Config{
 		Cookie:   "SECRET_SESS_COOKIE_" + b.AppName,
@@ -74,6 +74,7 @@ func (b *Bootstrapper) SetupSessions(expires time.Duration, cookieHashKey, cooki
 // `(context.StatusCodeNotSuccessful`,  which defaults to < 200 || >= 400 but you can change it).
 func (b *Bootstrapper) SetupErrorHandlers() {
 	b.OnAnyErrorCode(func(ctx iris.Context) {
+		// Error Handler
 		err := iris.Map{
 			"app":     b.AppName,
 			"status":  ctx.GetStatusCode(),
@@ -84,13 +85,16 @@ func (b *Bootstrapper) SetupErrorHandlers() {
 			ctx.JSON(err)
 			return
 		}
-		ctx.ViewData("Err", err)
-		ctx.ViewData("Title", "Error")
-		ctx.View("shared/error.html")
+
+		// ViewData(k, v) passed error details to view template
+		ctx.ViewData("Err", err)       // Passes the error details (err) to the view template under the key "Err"
+		ctx.ViewData("Title", "Error") // Sets the page title to "Error", making it available in the view template under the key "Title".
+		ctx.View("shared/error.html")  // Render the view using error.html template
 	})
 }
 
 // Configure accepts configurations and runs them inside the Bootstraper's context.
+// Receiver Function
 func (b *Bootstrapper) Configure(cs ...Configurator) {
 	for _, c := range cs {
 		c(b)
@@ -101,6 +105,8 @@ func (b *Bootstrapper) Configure(cs ...Configurator) {
 func (b *Bootstrapper) setupCron() {
 	// Service class applications
 	if conf.RunningCrontabService {
+		// start cron job for reseting all gift prize data every 5 minutes
+		//  and distribute prizes into the pool every minute
 		cron.ConfigueAppOneCron()
 	}
 	cron.ConfigueAppAllCron()
