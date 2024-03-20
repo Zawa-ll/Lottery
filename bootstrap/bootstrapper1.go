@@ -112,16 +112,6 @@ func (b *Bootstrapper) setupCron() {
 	cron.ConfigueAppAllCron()
 }
 
-const (
-	// StaticAssets is the root directory for public assets like images, css, js.
-	StaticAssets = "./public"
-	// Favicon is the relative 9to the "StaticAssets") favicon path for our app.
-	Favicon = "/favicon.ico"
-)
-
-// Bootstrap prepares our application.
-//
-// Returns itself.
 func (b *Bootstrapper) Bootstrap() *Bootstrapper {
 	b.SetupViews("./views")
 	b.SetupSessions(24*time.Hour,
@@ -131,12 +121,13 @@ func (b *Bootstrapper) Bootstrap() *Bootstrapper {
 	b.SetupErrorHandlers()
 
 	// static files
-	b.Favicon(StaticAssets + Favicon)
-	b.HandleDir(StaticAssets[1:], StaticAssets)
-	indexHtml, err := os.ReadFile(StaticAssets + "/index.html")
+	b.Favicon("./public/favicon.ico")
+	b.HandleDir("/public", "./public")
+
+	indexHtml, err := os.ReadFile("./public/index.html")
+
 	if err == nil {
-		b.StaticContent(StaticAssets[1:]+"/", "text/html",
-			indexHtml)
+		b.StaticContent("/public/", "text/html", indexHtml)
 	}
 	// Don't leave out the "/" at the end of the catalog
 	iris.WithoutPathCorrectionRedirection(b.Application)
@@ -144,9 +135,9 @@ func (b *Bootstrapper) Bootstrap() *Bootstrapper {
 	// crontab
 	b.setupCron()
 
-	// middleware, after static files
-	b.Use(recover.New())
-	b.Use(logger.New())
+	// middleware from iris pacakge
+	b.Use(recover.New()) // Recover even if an unexpected error occurs, error can still be logged, and continue running without interruption.
+	b.Use(logger.New())  // Logs request method, URL, response status code, process time.
 
 	return b
 }
