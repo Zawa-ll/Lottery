@@ -12,13 +12,17 @@ var port = 8080
 
 // Initialize Application
 func newApp() *bootstrap.Bootstrapper {
-	app := bootstrap.New("go_lottery_system", "Haydn") // appName, appOwner
+	app := bootstrap.New("lottery_system", "Haydn") // appName, appOwner
 	app.Bootstrap()
 	app.Configure(identity.Configure, routes.Configure)
 	return app
 }
 
 func main() {
+	// if port == 8080 {
+	// 	conf.RunningCrontabSerice = true
+	// }
+
 	app := newApp()
 	app.Listen(fmt.Sprintf(":%d", port))
 }
