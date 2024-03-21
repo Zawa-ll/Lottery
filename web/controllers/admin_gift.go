@@ -8,6 +8,7 @@ import (
 	"github.com/Zawa-ll/raffle/comm"
 	"github.com/Zawa-ll/raffle/models"
 	"github.com/Zawa-ll/raffle/services"
+	"github.com/Zawa-ll/raffle/web/utils"
 	"github.com/Zawa-ll/raffle/web/viewmodels"
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/mvc"
@@ -25,18 +26,18 @@ type AdminGiftController struct {
 
 func (c *AdminGiftController) Get() mvc.Result {
 	// TODO: datalist, total
-	datalist := c.ServicesGift.GetAll()
+	datalist := c.ServicesGift.GetAll(false) // useCache: false
 	total := len(datalist)
 	for i, giftInfo := range datalist {
 		// Prize Distribution Program Data
 		prizedata := make([][2]int, 0)
-		err := json.Unmarshal([]byte(giftInfo.PrizeData), &prizedata) //deserialization processing
+		err := json.Unmarshal([]byte(giftInfo.PrizeData), &prizedata) // unmarshal each gift into a slice of integer pairs (prizedata)
 		if err != nil || len(prizedata) < 1 {
 			datalist[i].PrizeData = "[]"
 		} else {
 			newpd := make([]string, len(prizedata))
-			for index, pd := range prizedata {
-				ct := comm.FormatFromUnixTime(int64(pd[0]))
+			for index, pd := range prizedata { // pd represents prizedata
+				ct := comm.FormatFromUnixTime(int64(pd[0])) // ct represents current time
 				newpd[index] = fmt.Sprintf("[%s] : %d", ct, pd[1])
 			}
 			str, err := json.Marshal(newpd)
@@ -63,7 +64,7 @@ func (c *AdminGiftController) GetEdit() mvc.Result {
 	id := c.Ctx.URLParamIntDefault("id", 0)
 	giftInfo := viewmodels.ViewGift{}
 	if id > 0 {
-		data := c.ServicesGift.Get(id)
+		data := c.ServicesGift.Get(id, false)
 		giftInfo.Id = data.Id
 		giftInfo.Title = data.Title
 		giftInfo.PrizeNum = data.PrizeNum
@@ -90,6 +91,7 @@ func (c *AdminGiftController) GetEdit() mvc.Result {
 
 func (c *AdminGiftController) PostSave() mvc.Result {
 	data := viewmodels.ViewGift{}
+	// Read form data into a viewmodels.ViewGift struct (data)
 	err := c.Ctx.ReadForm(&data) // Fill in value based on view_gift.go
 	if err != nil {
 		fmt.Println("admin_gift.PostSave ReadForm error = ", err)
@@ -117,33 +119,40 @@ func (c *AdminGiftController) PostSave() mvc.Result {
 	giftInfo.TimeBegin = int(t1.Unix())
 	giftInfo.TimeEnd = int(t2.Unix())
 	if giftInfo.Id > 0 {
-		// Updating Data
-		datainfo := c.ServicesGift.Get(giftInfo.Id)
-		if datainfo != nil && datainfo.Id > 0 {
+		datainfo := c.ServicesGift.Get(giftInfo.Id, false)
+		if datainfo != nil {
+			giftInfo.SysUpdated = int(time.Now().Unix())
+			giftInfo.SysIp = comm.ClientIP(c.Ctx.Request())
+			// Comparison of modified content items
 			if datainfo.PrizeNum != giftInfo.PrizeNum {
-				// Number of Prizes Changed
-				giftInfo.LeftNum = datainfo.LeftNum - datainfo.PrizeNum -
-					datainfo.PrizeNum - giftInfo.PrizeNum
+				// Total number of prizes changed
+				giftInfo.LeftNum = datainfo.LeftNum - (datainfo.PrizeNum - giftInfo.PrizeNum)
 				if giftInfo.LeftNum < 0 || giftInfo.PrizeNum <= 0 {
 					giftInfo.LeftNum = 0
 				}
-				// TODO:
+				giftInfo.SysStatus = datainfo.SysStatus
+				// Reset the prize cycle information for a prize
+				// Potentially Re-update the prize plan according to the prize cycle.
+				utils.ResetGiftPrizeData(&giftInfo, c.ServicesGift)
 			}
-			giftInfo.SysUpdated = int(time.Now().Unix())
-			c.ServicesGift.Update(&giftInfo,
-				[]string{""})
+			if datainfo.PrizeTime != giftInfo.PrizeTime {
+				// The prize distribution cycle has changed
+				utils.ResetGiftPrizeData(&giftInfo, c.ServicesGift)
+			}
+			c.ServicesGift.Update(&giftInfo, []string{"title", "prize_num", "left_num", "prize_code", "prize_time",
+				"img", "displayorder", "gtype", "gdata", "time_begin", "time_end", "sys_updated"})
 		} else {
 			giftInfo.Id = 0
 		}
 	}
-
-	if giftInfo.Id == 0 {
+	if giftInfo.Id <= 0 {
 		giftInfo.LeftNum = giftInfo.PrizeNum
 		giftInfo.SysIp = comm.ClientIP(c.Ctx.Request())
 		giftInfo.SysCreated = int(time.Now().Unix())
 		c.ServicesGift.Create(&giftInfo)
+		// Update the prize distribution plan for prizes
+		utils.ResetGiftPrizeData(&giftInfo, c.ServicesGift)
 	}
-
 	return mvc.Response{
 		Path: "/admin/gift",
 	}
@@ -164,8 +173,8 @@ func (c *AdminGiftController) GetReset() mvc.Result {
 	// TODO:
 	id, err := c.Ctx.URLParamInt("id")
 	if err != nil {
-		c.ServicesGift.Update(&models.LtGift{Id: id, SysStatus: 0}, // Reset: Status changed to 0
-			[]string{"sys_status"})
+		c.ServicesGift.Update(&models.LtGift{Id: id, SysStatus: 0}, // Reset: Status=1 represents deleted
+			[]string{"sys_status"}) // Update the table to a empty table (with only 'sys_status' as title)
 	}
 	return mvc.Response{
 		Path: "/admin/gift",
