@@ -4,7 +4,7 @@ type ObjGiftPrize struct {
 	Id           int    `json:"id"`
 	Title        string `json:"title"`
 	PrizeNum     int    `json:"-"`
-	LeftNum		 int    `json:"-"`
+	LeftNum      int    `json:"-"`
 	PrizeCodeA   int    `json:"-"`
 	PrizeCodeB   int    `json:"-"`
 	Img          string `json:"img"`

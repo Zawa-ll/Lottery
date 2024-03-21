@@ -2,9 +2,9 @@ package models
 
 type LtCode struct {
 	Id         int    `xorm:"not null pk autoincr INT(10)"`
-	GiftId     int    `xorm:"not null default 0 comment('奖品ID，关联lt_gift表') INT(10)"`
-	Code       string `xorm:"not null default '' comment('虚拟券编码') VARCHAR(255)"`
-	SysCreated int    `xorm:"not null default 0 comment('创建时间') INT(10)"`
-	SysUpdated int    `xorm:"not null default 0 comment('更新时间') INT(10)"`
-	SysStatus  int    `xorm:"not null default 0 comment('状态，0正常，1作废，2已发放') SMALLINT(5)"`
+	GiftId     int    `xorm:"not null default 0 comment('Prize ID, associated with the lt_gift table') INT(10)"`
+	Code       string `xorm:"not null default '' comment('Virtual Coupon Code') VARCHAR(255)"`
+	SysCreated int    `xorm:"not null default 0 comment('Virtual Coupon Code') INT(10)"`
+	SysUpdated int    `xorm:"not null default 0 comment('update time') INT(10)"`
+	SysStatus  int    `xorm:"not null default 0 comment('Status, 0 Normal, 1 Voided, 2 Issued') SMALLINT(5)"`
 }

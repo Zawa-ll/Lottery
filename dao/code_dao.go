@@ -90,7 +90,7 @@ func (d *CodeDao) Create(data *models.LtCode) error {
 	return err
 }
 
-// Find the next available smallest coupon
+// Find the next available smallest value coupon
 func (d *CodeDao) NextUsingCode(giftId, codeId int) *models.LtCode {
 	datalist := make([]models.LtCode, 0)
 	err := d.engine.Where("gift_id=?", giftId).
@@ -105,7 +105,7 @@ func (d *CodeDao) NextUsingCode(giftId, codeId int) *models.LtCode {
 	}
 }
 
-// Upgrade based on the unique code
+// Update based on the unique code
 func (d *CodeDao) UpdateByCode(data *models.LtCode, columns []string) error {
 	_, err := d.engine.Where("code=?", data.Code).
 		MustCols(columns...).Update(data)

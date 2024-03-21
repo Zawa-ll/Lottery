@@ -1,6 +1,6 @@
 package models
 
-// The user model that interacts with the browser on the site
+// The user model used on browser
 type ObjLoginuser struct {
 	Uid      int
 	Username string

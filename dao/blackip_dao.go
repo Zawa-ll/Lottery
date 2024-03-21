@@ -11,6 +11,7 @@ type BlackipDao struct {
 	engine *xorm.Engine
 }
 
+// New Dao Engine are created for each Dao
 func NewBlackipDao(engine *xorm.Engine) *BlackipDao {
 	return &BlackipDao{
 		engine: engine,
