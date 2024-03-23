@@ -1,8 +1,6 @@
 package dao
 
 import (
-	"log"
-
 	"github.com/Zawa-ll/raffle/models"
 	"github.com/go-xorm/xorm"
 )
@@ -11,15 +9,14 @@ type BlackipDao struct {
 	engine *xorm.Engine
 }
 
-// New Dao Engine are created for each Dao
 func NewBlackipDao(engine *xorm.Engine) *BlackipDao {
 	return &BlackipDao{
 		engine: engine,
 	}
 }
 
-func (d *BlackipDao) Get(id int) *models.LtGift {
-	data := &models.LtGift{Id: id}
+func (d *BlackipDao) Get(id int) *models.LtBlackip {
+	data := &models.LtBlackip{Id: id}
 	ok, err := d.engine.Get(data)
 	if ok && err == nil {
 		return data
@@ -29,22 +26,23 @@ func (d *BlackipDao) Get(id int) *models.LtGift {
 	}
 }
 
-func (d *BlackipDao) GetAll() []models.LtGift {
-	datalist := make([]models.LtGift, 0)
+func (d *BlackipDao) GetAll(page, size int) []models.LtBlackip {
+	offset := (page - 1) * size
+	datalist := make([]models.LtBlackip, 0)
 	err := d.engine.
-		Asc("sts_status").
-		Asc("displayorder").
+		Desc("id").
+		Limit(size, offset).
 		Find(&datalist)
 	if err != nil {
-		log.Println("gift_dao.GetAll error=", err)
+		return datalist
+	} else {
 		return datalist
 	}
-	return datalist
 }
 
-func (d *BlackipDao) CountALl() int64 {
+func (d *BlackipDao) CountAll() int64 {
 	num, err := d.engine.
-		Count(&models.LtGift{})
+		Count(&models.LtBlackip{})
 	if err != nil {
 		return 0
 	} else {
@@ -52,26 +50,41 @@ func (d *BlackipDao) CountALl() int64 {
 	}
 }
 
-func (d *BlackipDao) Delete(id int) error {
-	data := &models.LtGift{Id: id, SysStatus: 1}
-	_, err := d.engine.Id(data.Id).
-		Update(data)
+func (d *BlackipDao) Search(ip string) []models.LtBlackip {
+	datalist := make([]models.LtBlackip, 0)
+	err := d.engine.
+		Where("ip=?", ip).
+		Desc("id").
+		Find(&datalist)
+	if err != nil {
+		return datalist
+	} else {
+		return datalist
+	}
+}
+
+//func (d *BlackipDao) Delete(id int) error {
+//	data := &models.LtBlackip{Id: id, SysStatus: 1}
+//	_, err := d.engine.ID(data.Id).Update(data)
+//	return err
+//}
+
+func (d *BlackipDao) Update(data *models.LtBlackip, columns []string) error {
+	_, err := d.engine.ID(data.Id).MustCols(columns...).Update(data)
 	return err
 }
 
-func (d *BlackipDao) Update(data *models.LtGift, columns []string) error {
-	_, err := d.engine.Id(data.Id).MustCols(columns...).Update(data)
-	return err
-}
-
-func (d *BlackipDao) Create(data *models.LtGift) error {
+func (d *BlackipDao) Create(data *models.LtBlackip) error {
 	_, err := d.engine.Insert(data)
 	return err
 }
 
+// 根据IP获取信息
 func (d *BlackipDao) GetByIp(ip string) *models.LtBlackip {
 	datalist := make([]models.LtBlackip, 0)
-	err := d.engine.Where("ip=?", ip).
+	err := d.engine.
+		Where("ip=?", ip).
+		Desc("id").
 		Limit(1).
 		Find(&datalist)
 	if err != nil || len(datalist) < 1 {
