@@ -2,7 +2,7 @@ package dao
 
 import (
 	"github.com/Zawa-ll/raffle/models"
-	"xorm.io/xorm"
+	"github.com/go-xorm/xorm"
 )
 
 type UserDao struct {
