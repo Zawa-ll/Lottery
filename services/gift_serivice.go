@@ -8,8 +8,8 @@ import (
 
 	"github.com/Zawa-ll/raffle/comm"
 	"github.com/Zawa-ll/raffle/dao"
+	"github.com/Zawa-ll/raffle/datasource"
 	"github.com/Zawa-ll/raffle/models"
-	"imooc.com/lottery/datasource"
 )
 
 type GiftService interface {
@@ -29,6 +29,7 @@ type giftService struct {
 	dao *dao.GiftDao
 }
 
+// initialize GiftService instance with a Dao instance
 func NewGiftService() GiftService {
 	return &giftService{
 		dao: dao.NewGiftDao(datasource.InstanceDbMaster()),
@@ -37,14 +38,13 @@ func NewGiftService() GiftService {
 
 func (s *giftService) GetAll(useCache bool) []models.LtGift {
 	if !useCache {
-		// Direct reading of the database
 		return s.dao.GetAll()
 	}
 
-	// Read the cache first
+	// Read the cache
 	gifts := s.getAllByCache()
 	if len(gifts) < 1 {
-		// Read the database again
+		// Read the database
 		gifts = s.dao.GetAll()
 		s.setAllByCache(gifts)
 	}
@@ -52,11 +52,9 @@ func (s *giftService) GetAll(useCache bool) []models.LtGift {
 }
 
 func (s *giftService) CountAll() int64 {
-	// Direct reading of the database
 	//return s.dao.CountAll()
 
-	// Reads after cache optimization
-	gifts := s.GetAll(true)
+	gifts := s.GetAll(true) // cache optimization
 	return int64(len(gifts))
 }
 
@@ -66,12 +64,11 @@ func (s *giftService) CountAll() int64 {
 
 func (s *giftService) Get(id int, useCache bool) *models.LtGift {
 	if !useCache {
-		// Direct reading of the database
+		// Read of the database
 		return s.dao.Get(id)
 	}
 
-	// Reads after cache optimization
-	gifts := s.GetAll(true)
+	gifts := s.GetAll(true) // cache optimization
 	for _, gift := range gifts {
 		if gift.Id == id {
 			return &gift
@@ -81,39 +78,33 @@ func (s *giftService) Get(id int, useCache bool) *models.LtGift {
 }
 
 func (s *giftService) Delete(id int) error {
-	// Update the cache first
 	data := &models.LtGift{Id: id}
 	s.updateByCache(data, nil)
-	// Then update the database
 	return s.dao.Delete(id)
 }
 
 func (s *giftService) Update(data *models.LtGift, columns []string) error {
-	// Update the cache first
 	s.updateByCache(data, columns)
-	// Then update the database
 	return s.dao.Update(data, columns)
 }
 
 func (s *giftService) Create(data *models.LtGift) error {
-	// Update the cache first
 	s.updateByCache(data, nil)
-	// Then update the database
 	return s.dao.Create(data)
 }
 
 // Get a list of currently available prizes
-// Prize-qualified, status-normal, time-duration
-// gtype reverse, displayorder forward
+// with prize qualification, in normal status, and within time period
 func (s *giftService) GetAllUse(useCache bool) []models.ObjGiftPrize {
 	list := make([]models.LtGift, 0)
 	if !useCache {
-		// Direct reading of the database
+		// Read of the database
 		list = s.dao.GetAllUse()
 	} else {
-		// Reads after cache optimization
-		now := comm.NowUnix()
+		// Read with cache optimization
+		now := comm.NowUnix() // current time
 		gifts := s.GetAll(true)
+		// Pick out only necessary gifts
 		for _, gift := range gifts {
 			if gift.Id > 0 && gift.SysStatus == 0 &&
 				gift.PrizeNum >= 0 &&
@@ -124,7 +115,7 @@ func (s *giftService) GetAllUse(useCache bool) []models.ObjGiftPrize {
 		}
 	}
 
-	if list != nil {
+	if list != nil { // filtered list
 		gifts := make([]models.ObjGiftPrize, 0)
 		for _, gift := range list {
 			codes := strings.Split(gift.PrizeCode, "-")
@@ -165,12 +156,13 @@ func (s *giftService) DecrLeftNum(id, num int) (int64, error) {
 	return s.dao.DecrLeftNum(id, num)
 }
 
-// Get all the prizes from the cache
+// GetAll gifts from Cache
 func (s *giftService) getAllByCache() []models.LtGift {
-	// Cluster mode, redis cache
+	// In cluster mode, using Redis for caching
 	key := "allgift"
 	rds := datasource.InstanceCache()
-	// Read Cache
+
+	// Interact with Cache
 	rs, err := rds.Do("GET", key)
 	if err != nil {
 		log.Println("gift_service.getAllByCache GET key=", key, ", error=", err)
@@ -222,13 +214,12 @@ func (s *giftService) getAllByCache() []models.LtGift {
 	return gifts
 }
 
-// Update prize data to cache
+// Update gifts in cache
 func (s *giftService) setAllByCache(gifts []models.LtGift) {
-	// Cluster mode, redis cache
 	strValue := ""
 	if len(gifts) > 0 {
 		datalist := make([]map[string]interface{}, len(gifts))
-		// format conversion
+		// Format conversion
 		for i := 0; i < len(gifts); i++ {
 			gift := gifts[i]
 			data := make(map[string]interface{})
@@ -262,21 +253,19 @@ func (s *giftService) setAllByCache(gifts []models.LtGift) {
 	key := "allgift"
 	rds := datasource.InstanceCache()
 	// Updating the cache
-	_, err := rds.Do("SET", key, strValue)
+	_, err := rds.Do("SET", "allgift", strValue)
 	if err != nil {
 		log.Println("gift_service.setAllByCache SET key=", key,
 			", value=", strValue, ", error=", err)
 	}
 }
 
-// Data update, need to update the cache, directly clear the cache data
+// Clearing up Cache
 func (s *giftService) updateByCache(data *models.LtGift, columns []string) {
 	if data == nil || data.Id <= 0 {
 		return
 	}
-	// Cluster mode, redis cache
 	key := "allgift"
 	rds := datasource.InstanceCache()
-	// Deleting the cache in redis
 	rds.Do("DEL", key)
 }
